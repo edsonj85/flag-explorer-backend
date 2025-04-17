@@ -3,11 +3,17 @@ package com.edsonj.flagexplorer.service;
 import com.edsonj.flagexplorer.model.Country;
 import com.edsonj.flagexplorer.model.CountryApiResponse;
 import com.edsonj.flagexplorer.model.CountryDetails;
+import io.netty.handler.ssl.SslContextBuilder;
+import io.netty.handler.ssl.util.InsecureTrustManagerFactory;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.client.reactive.ReactorClientHttpConnector;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import reactor.netty.http.client.HttpClient;
+
+import javax.net.ssl.SSLException;
 
 @Slf4j
 @Service
@@ -18,11 +24,23 @@ public class CountryServiceImpl implements CountryService {
     private final String BASE_URL = "https://restcountries.com/v3.1";
 
     public CountryServiceImpl(WebClient.Builder webClientBuilder) {
-        this.webClient = webClientBuilder.baseUrl(BASE_URL).build();
+        HttpClient httpClient = HttpClient.create()
+                .secure(spec -> {
+                    try {
+                        spec.sslContext(SslContextBuilder.forClient()
+                                .trustManager(InsecureTrustManagerFactory.INSTANCE).build());
+                    } catch (SSLException e) {
+                        throw new RuntimeException(e);
+                    }
+                });
+        this.webClient = webClientBuilder
+                .clientConnector(new ReactorClientHttpConnector(httpClient))
+                .baseUrl(BASE_URL).build();
     }
 
     @Override
     public Flux<Country> getAllCountries() {
+        log.info("Called for all countries");
         return webClient.get()
                 .uri("/all")
                 .retrieve()
@@ -37,6 +55,7 @@ public class CountryServiceImpl implements CountryService {
 
     @Override
     public Mono<CountryDetails> getCountryByName(String name) {
+        log.info("Called for all country {}", name);
         return webClient.get()
                 .uri("/name/{name}", name)
                 .retrieve()
