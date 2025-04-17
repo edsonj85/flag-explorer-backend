@@ -2,6 +2,7 @@ package com.edsonj.flagexplorer.controller.it;
 
 import com.edsonj.flagexplorer.model.Country;
 import com.edsonj.flagexplorer.model.CountryDetails;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.reactive.AutoConfigureWebTestClient;
@@ -9,12 +10,24 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.reactive.server.WebTestClient;
 
+import java.time.Duration;
+
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureWebTestClient
 public class CountryControllerIntegrationTest {
 
     @Autowired
+    private WebTestClient baseWebTestClient;
+
     private WebTestClient webTestClient;
+
+    @BeforeEach
+    public void setup() {
+        this.webTestClient = baseWebTestClient
+                .mutate()
+                .responseTimeout(Duration.ofSeconds(30))
+                .build();
+    }
 
     @Test
     public void testGetAllCountries_success() {

@@ -24,17 +24,7 @@ public class CountryServiceImpl implements CountryService {
     private final String BASE_URL = "https://restcountries.com/v3.1";
 
     public CountryServiceImpl(WebClient.Builder webClientBuilder) {
-        HttpClient httpClient = HttpClient.create()
-                .secure(spec -> {
-                    try {
-                        spec.sslContext(SslContextBuilder.forClient()
-                                .trustManager(InsecureTrustManagerFactory.INSTANCE).build());
-                    } catch (SSLException e) {
-                        throw new RuntimeException(e);
-                    }
-                });
         this.webClient = webClientBuilder
-                .clientConnector(new ReactorClientHttpConnector(httpClient))
                 .baseUrl(BASE_URL).build();
     }
 
