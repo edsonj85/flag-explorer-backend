@@ -29,15 +29,12 @@ jobs:
       - name: 📦 Package Spring Boot App
         run: ./mvnw package -DskipTests
 
-      - name: 🐳 (Optional) Build Docker Image
-        run: |
-          docker build -t flag-explorer-backend .
-        if: always()  # Remove this line if you want to make Docker optional based on success
+      - name: 🐳 Build Docker Image
+        run: docker build -t ${{ secrets.DOCKER_USERNAME }}/flag-explorer-backend .
 
-    # Optionally push Docker image to Docker Hub or GitHub Container Registry
-    # Add secrets and uncomment if needed
-    # - name: 🔐 Log in to DockerHub
-    #   run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
+      # Docker image to Docker Hub
+      - name: 🔐 Log in to DockerHub
+        run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
 
-    # - name: 🚀 Push Docker Image
-    #   run: docker push yourdockerhubusername/flag-explorer-backend
+      - name: 🚀 Push Docker Image
+        run: docker push ${{ secrets.DOCKER_USERNAME }}/flag-explorer-backend
